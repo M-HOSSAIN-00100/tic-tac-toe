@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>আকলিমা vs M-HOSSAIN | প্রফেশনাল টিক ট্যাক টো</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2c3e50;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --player-x: #e74c3c;
+            --player-o: #3498db;
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--light);
+            overflow-x: hidden;
+        }
+        
+        .game-container {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+        
+        .game-container::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+            z-index: -1;
+        }
+        
+        .game-header {
+            padding: 25px 25px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-header::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 5%;
+            width: 90%;
+            height: 2px;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent);
+        }
+        
+        .game-title {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            background: linear-gradient(to right, #12c2e9, #c471ed, #f64f59);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+        
+        .player-info {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 0 20px;
+            margin: 25px 0;
+        }
+        
+        .player-card {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            transition: var(--transition);
+            border: 2px solid transparent;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .player-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, #12c2e9, #c471ed, #f64f59);
+        }
+        
+        .player-card.active {
+            transform: translateY(-10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+        }
+        
+        .player-card.x.active {
+            box-shadow: 0 0 20px rgba(231, 76, 60, 0.4);
+        }
+        
+        .player-card.o.active {
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.4);
+        }
+        
+        .player-type {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            color: #ddd;
+            font-weight: 600;
+        }
+        
+        .player-name {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        #humanPlayer {
+            color: var(--player-x);
+            text-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+        }
+        
+        #aiPlayer {
+            color: var(--player-o);
+            text-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+        
+        .player-icon {
+            font-size: 2.5rem;
+            margin: 10px 0;
+        }
+        
+        .player-icon.x {
+            color: var(--player-x);
+        }
+        
+        .player-icon.o {
+            color: var(--player-o);
+        }
+        
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 0 auto 30px;
+            padding: 0 20px;
+            max-width: 450px;
+        }
+        
+        .cell {
+            aspect-ratio: 1/1;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4.5rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .cell:hover {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+            background: rgba(0, 0, 0, 0.35);
+        }
+        
+        .cell.x {
+            color: var(--player-x);
+            text-shadow: 0 0 15px rgba(231, 76, 60, 0.7);
+        }
+        
+        .cell.o {
+            color: var(--player-o);
+            text-shadow: 0 0 15px rgba(52, 152, 219, 0.7);
+        }
+        
+        .game-status-container {
+            padding: 0 20px;
+            margin-bottom: 25px;
+        }
+        
+        .game-status {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 18px;
+            font-size: 1.8rem;
+            text-align: center;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffd700;
+            font-weight: 600;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .controls {
+            padding: 0 20px 30px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        #restartButton {
+            background: linear-gradient(to right, #141e30, #243b55);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.4rem;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #restartButton::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: 0.6s;
+        }
+        
+        #restartButton:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            text-shadow: 0 0 10px rgba(255,255,255,0.8);
+        }
+        
+        #restartButton:hover::before {
+            left: 100%;
+        }
+        
+        .developer-credit {
+            padding: 20px;
+            text-align: center;
+            color: rgba(255,255,255,0.7);
+            font-size: 1.1rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .win-animation {
+            animation: winPulse 1.5s infinite;
+        }
+        
+        @keyframes winPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .game-title {
+                font-size: 2.3rem;
+            }
+            
+            .player-card {
+                padding: 15px;
+            }
+            
+            .player-type {
+                font-size: 1.2rem;
+            }
+            
+            .player-name {
+                font-size: 1.5rem;
+            }
+            
+            .cell {
+                font-size: 3.5rem;
+            }
+            
+            .game-status {
+                font-size: 1.6rem;
+                min-height: 70px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .game-title {
+                font-size: 2rem;
+            }
+            
+            .player-info {
+                flex-direction: column;
+                max-width: 300px;
+                margin: 20px auto;
+            }
+            
+            .player-card {
+                width: 100%;
+            }
+            
+            .game-board {
+                gap: 8px;
+            }
+            
+            .cell {
+                font-size: 3rem;
+            }
+            
+            .game-status {
+                font-size: 1.4rem;
+                padding: 15px;
+            }
+            
+            #restartButton {
+                padding: 15px 30px;
+                font-size: 1.2rem;
+            }
+        }
+        
+        /* Animation for X and O */
+        @keyframes appear {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .cell.x::before, .cell.o::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            animation: appear 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">আকলিমা vs M-HOSSAIN</h1>
+        </div>
+        
+        <div class="player-info">
+            <div class="player-card x active" id="humanPlayerCard">
+                <div class="player-type">মানুষ</div>
+                <div class="player-icon x"><i class="fas fa-user"></i></div>
+                <div class="player-name" id="humanPlayer">আকলিমা (X)</div>
+            </div>
+            
+            <div class="player-card o" id="aiPlayerCard">
+                <div class="player-type">অপরাজেয় AI</div>
+                <div class="player-icon o"><i class="fas fa-robot"></i></div>
+                <div class="player-name" id="aiPlayer">M-HOSSAIN (O)</div>
+            </div>
+        </div>
+        
+        <div class="game-board" id="board">
+            <div class="cell" data-cell-index="0"></div>
+            <div class="cell" data-cell-index="1"></div>
+            <div class="cell" data-cell-index="2"></div>
+            <div class="cell" data-cell-index="3"></div>
+            <div class="cell" data-cell-index="4"></div>
+            <div class="cell" data-cell-index="5"></div>
+            <div class="cell" data-cell-index="6"></div>
+            <div class="cell" data-cell-index="7"></div>
+            <div class="cell" data-cell-index="8"></div>
+        </div>
+        
+        <div class="game-status-container">
+            <div class="game-status" id="status">আপনার চাল, আকলিমা!</div>
+        </div>
+        
+        <div class="controls">
+            <button id="restartButton">
+                <i class="fas fa-sync-alt"></i>
+                নতুন খেলা শুরু করুন
+            </button>
+        </div>
+        
+        <div class="developer-credit">
+            Developed by M-HOSSAIN | GitHub: M-HOSSAIN-DEV
+        </div>
+    </div>
+
+    <script>
+        // Game configuration
+        const PLAYER_X = "আকলিমা";
+        const PLAYER_O = "M-HOSSAIN";
+        const DEVELOPER = "M-HOSSAIN";
+        
+        // DOM elements
+        const statusDisplay = document.getElementById('status');
+        const cells = document.querySelectorAll('.cell');
+        const restartButton = document.getElementById('restartButton');
+        const humanPlayerCard = document.getElementById('humanPlayerCard');
+        const aiPlayerCard = document.getElementById('aiPlayerCard');
+        
+        // Game state
+        let gameActive = true;
+        let currentPlayer = "X";
+        let gameState = ["", "", "", "", "", "", "", "", ""];
+        
+        // Winning conditions 
+        const winningConditions = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ];
+        
+        // Game messages
+        const winningMessage = () => `${currentPlayer === 'X' ? PLAYER_X : PLAYER_O} জিতেছেন!`;
+        const drawMessage = () => `খেলাটি ড্র হয়েছে!`;
+        const currentPlayerTurn = () => `${currentPlayer === 'X' ? PLAYER_X : PLAYER_O}-এর চাল`;
+        
+        // Initialize game
+        statusDisplay.innerHTML = `${PLAYER_X}-এর চাল (X)`;
+        
+        // Handle cell click
+        function handleCellClick(clickedCellEvent) {
+            const clickedCell = clickedCellEvent.target;
+            const clickedCellIndex = parseInt(clickedCell.getAttribute('data-cell-index'));
+            
+            if (gameState[clickedCellIndex] !== "" || !gameActive) return;
+            
+            handleCellPlayed(clickedCell, clickedCellIndex);
+            const win = handleResultValidation();
+            
+            if (!win && gameActive) {
+                handlePlayerChange();
+                setTimeout(() => {
+                    if (currentPlayer === "O") makeAIMove();
+                }, 700);
+            }
+        }
+        
+        // Handle cell played
+        function handleCellPlayed(clickedCell, clickedCellIndex) {
+            gameState[clickedCellIndex] = currentPlayer;
+            clickedCell.textContent = currentPlayer;
+            clickedCell.classList.add(currentPlayer === 'X' ? 'x' : 'o');
+        }
+        
+        // Validate game result
+        function handleResultValidation() {
+            let roundWon = false;
+            let winningCombo = [];
+            
+            for (let i = 0; i < winningConditions.length; i++) {
+                const [a, b, c] = winningConditions[i];
+                if (
+                    gameState[a] &&
+                    gameState[a] === gameState[b] &&
+                    gameState[a] === gameState[c]
+                ) {
+                    roundWon = true;
+                    winningCombo = [a, b, c];
+                    break;
+                }
+            }
+            
+            if (roundWon) {
+                // Highlight winning cells
+                winningCombo.forEach(index => {
+                    cells[index].classList.add('win-animation');
+                });
+                
+                statusDisplay.innerHTML = winningMessage();
+                gameActive = false;
+                return true;
+            }
+            
+            const roundDraw = !gameState.includes("");
+            if (roundDraw) {
+                statusDisplay.innerHTML = drawMessage();
+                gameActive = false;
+                return true;
+            }
+            
+            return false;
+        }
+        
+        // Switch player
+        function handlePlayerChange() {
+            currentPlayer = currentPlayer === "X" ? "O" : "X";
+            statusDisplay.innerHTML = currentPlayerTurn();
+            
+            // Update active player UI
+            if (currentPlayer === "X") {
+                humanPlayerCard.classList.add("active");
+                aiPlayerCard.classList.remove("active");
+            } else {
+                aiPlayerCard.classList.add("active");
+                humanPlayerCard.classList.remove("active");
+            }
+        }
+        
+        // AI move logic using Minimax algorithm (unbeatable)
+        function makeAIMove() {
+            if (!gameActive) return;
+            
+            // Use Minimax to find best move
+            const bestMove = getBestMove();
+            playAIMove(bestMove);
+        }
+        
+        function getBestMove() {
+            // AI is the maximizing player (O)
+            let bestScore = -Infinity;
+            let move;
+            
+            for (let i = 0; i < 9; i++) {
+                if (gameState[i] === "") {
+                    gameState[i] = "O";
+                    let score = minimax(gameState, 0, false);
+                    gameState[i] = "";
+                    
+                    if (score > bestScore) {
+                        bestScore = score;
+                        move = i;
+                    }
+                }
+            }
+            
+            return move;
+        }
+        
+        function minimax(board, depth, isMaximizing) {
+            // Check terminal states
+            const result = checkWinner(board);
+            if (result !== null) {
+                if (result === "O") return 10 - depth;
+                if (result === "X") return depth - 10;
+                return 0;
+            }
+            
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (board[i] === "") {
+                        board[i] = "O";
+                        let score = minimax(board, depth + 1, false);
+                        board[i] = "";
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (board[i] === "") {
+                        board[i] = "X";
+                        let score = minimax(board, depth + 1, true);
+                        board[i] = "";
+                        bestScore = Math.min(score, bestScore);
+                    }
+                }
+                return bestScore;
+            }
+        }
+        
+        function checkWinner(board) {
+            for (let i = 0; i < winningConditions.length; i++) {
+                const [a, b, c] = winningConditions[i];
+                if (
+                    board[a] &&
+                    board[a] === board[b] &&
+                    board[a] === board[c]
+                ) {
+                    return board[a];
+                }
+            }
+            
+            if (!board.includes("")) return "draw";
+            return null;
+        }
+        
+        function playAIMove(index) {
+            gameState[index] = "O";
+            cells[index].textContent = "O";
+            cells[index].classList.add("o");
+            
+            const win = handleResultValidation();
+            if (!win) handlePlayerChange();
+        }
+        
+        // Restart game
+        function handleRestartGame() {
+            gameActive = true;
+            currentPlayer = "X";
+            gameState = ["", "", "", "", "", "", "", "", ""];
+            statusDisplay.innerHTML = `${PLAYER_X}-এর চাল (X)`;
+            cells.forEach(cell => {
+                cell.textContent = "";
+                cell.classList.remove("x", "o", "win-animation");
+            });
+            humanPlayerCard.classList.add("active");
+            aiPlayerCard.classList.remove("active");
+        }
+        
+        // Event listeners
+        cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+        restartButton.addEventListener('click', handleRestartGame);
+    </script>
+</body>
+</html>
